@@ -70,6 +70,11 @@ func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL, urlPrefix string
 	return &httputil.ReverseProxy{Director: director}
 }
 
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ready"))
+}
+
 var port = flag.String("port", "8080", "bind address")
 var debug = flag.Bool("debug", false, "debug mode")
 var urlPrefix = flag.String("url-prefix", "/", "URL prefix to strip from requests (can also use URL_PREFIX env var)")
@@ -89,11 +94,16 @@ func main() {
 	if urlPrefixEnv != "" && *urlPrefix == "/" {
 		*urlPrefix = urlPrefixEnv
 	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/_health", healthHandler)
+
 	proxy := NewSegmentReverseProxy(cdnURL, trackingAPIURL, *urlPrefix)
 	if *debug {
 		proxy = handlers.LoggingHandler(os.Stdout, proxy)
 		log.Printf("serving proxy at port %v with prefix %s\n", *port, *urlPrefix)
 	}
 
-	log.Fatal(http.ListenAndServe(":"+*port, proxy))
+	mux.Handle("/", proxy)
+	log.Fatal(http.ListenAndServe(":"+*port, mux))
 }

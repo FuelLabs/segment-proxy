@@ -81,6 +81,27 @@ func TestSegmentReverseProxy(t *testing.T) {
 	}
 }
 
+func TestHealthEndpoint(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/_health", healthHandler)
+	server := httptest.NewServer(mux)
+	defer server.Close()
+	resp, err := http.Get(server.URL + "/_health")
+	if err != nil {
+		t.Fatalf("Failed to GET /_health: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", resp.StatusCode)
+	}
+	buf := make([]byte, 16)
+	n, _ := resp.Body.Read(buf)
+	body := string(buf[:n])
+	if body != "ready" {
+		t.Errorf("Expected body 'ready', got %q", body)
+	}
+}
+
 func mustParseUrl(raw string) *url.URL {
 	u, err := url.Parse(raw)
 	if err != nil {
