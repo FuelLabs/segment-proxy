@@ -29,8 +29,15 @@ func singleJoiningSlash(a, b string) string {
 // method, modified to dynamically redirect to different servers (CDN or Tracking API)
 // based on the incoming request, and sets the host of the request to the host of of
 // the destination URL.
-func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
+func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL, urlPrefix string) http.Handler {
 	director := func(req *http.Request) {
+		if urlPrefix != "/" && strings.HasPrefix(req.URL.Path, urlPrefix) {
+			// Strip the prefix from the request path
+			req.URL.Path = strings.TrimPrefix(req.URL.Path, urlPrefix)
+			if req.URL.Path == "" {
+				req.URL.Path = "/"
+			}
+		}
 		// Figure out which server to redirect to based on the incoming request.
 		var target *url.URL
 		switch {
@@ -65,6 +72,7 @@ func NewSegmentReverseProxy(cdn *url.URL, trackingAPI *url.URL) http.Handler {
 
 var port = flag.String("port", "8080", "bind address")
 var debug = flag.Bool("debug", false, "debug mode")
+var urlPrefix = flag.String("url-prefix", "/", "URL prefix to strip from requests (can also use URL_PREFIX env var)")
 
 func main() {
 	flag.Parse()
@@ -76,10 +84,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	proxy := NewSegmentReverseProxy(cdnURL, trackingAPIURL)
+	// Set URL_PREFIX env var if flag is provided
+	urlPrefixEnv := os.Getenv("URL_PREFIX")
+	if urlPrefixEnv != "" && *urlPrefix == "/" {
+		*urlPrefix = urlPrefixEnv
+	}
+	proxy := NewSegmentReverseProxy(cdnURL, trackingAPIURL, *urlPrefix)
 	if *debug {
 		proxy = handlers.LoggingHandler(os.Stdout, proxy)
-		log.Printf("serving proxy at port %v\n", *port)
+		log.Printf("serving proxy at port %v with prefix %s\n", *port, *urlPrefix)
 	}
 
 	log.Fatal(http.ListenAndServe(":"+*port, proxy))
