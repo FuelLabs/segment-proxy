@@ -6,5 +6,5 @@
 4. Run `git tag -a X.Y.Z -m "Version X.Y.Z"` (where X.Y.Z is the new version).
 5. Run `git push && git push --tags`.
 6. Run `make docker-push`.
-7. Create a release on [Github](https://github.com/segmentio/segment-proxy/releases).
+7. Create a release on [Github](https://github.com/FuelLabs/segment-proxy/releases).
 8. Upload the files from the `bin` folder.

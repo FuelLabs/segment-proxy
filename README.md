@@ -16,17 +16,17 @@ Usage of proxy:
 
 ### Via Source
 
-1. Clone the repo `git clone git@github.com:segmentio/segment-proxy.git`.
+1. Clone the repo `git clone git@github.com:FuelLabs/segment-proxy.git`.
 2. Run `make build server`.
 
 ### Via Golang
 
-1. Run `go get github.com/segmentio/segment-proxy`.
+1. Run `go get github.com/FuelLabs/segment-proxy`.
 2. Run `segment-proxy`.
 
 ### Via prebuilt binaries.
 
-Download the latest binaries from [Github](https://github.com/segmentio/segment-proxy/releases).
+Download the latest binaries from [Github](https://github.com/FuelLabs/segment-proxy/releases).
 
 ### Via Docker
 

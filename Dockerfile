@@ -1,12 +1,11 @@
-FROM golang:1.14.4-alpine3.11 as builder
+FROM golang:1.25.3-alpine3.22 AS builder
 
 RUN apk add --update ca-certificates git
 
-ENV SRC github.com/segmentio/segment-proxy
+ENV SRC github.com/FuelLabs/segment-proxy
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
 ENV GOOS=linux
-ENV GOARCH=amd64
 
 ARG VERSION
 
